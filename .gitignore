@@ -1,0 +1,5 @@
+node_modules/
+temporary screenshots/
+render-pdf.html
+extract-pdf.mjs
+package-lock.json

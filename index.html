@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jeremy Jason — AI & Product Builder</title>
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { DEFAULT: '#2563EB', light: '#3B82F6', dark: '#1D4ED8' },
+          },
+          fontFamily: {
+            display: ['Space Grotesk', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    :root {
+      --bg: #080808;
+      --s1: #101010;
+      --s2: #181818;
+      --s3: #222222;
+      --border: rgba(255,255,255,0.07);
+      --border-hi: rgba(255,255,255,0.13);
+      --brand: #2563EB;
+      --brand-l: #3B82F6;
+      --text: #FFFFFF;
+      --text-2: #A1A1AA;
+      --text-3: #52525B;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── Grain ───────────────────────────────────────────── */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.02;
+      pointer-events: none;
+      z-index: 9000;
+    }
+
+    /* ── Scrollbar ───────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--brand); border-radius: 2px; }
+
+    /* ── Focus ───────────────────────────────────────────── */
+    *:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; border-radius: 4px; }
+
+    /* ── Navbar ──────────────────────────────────────────── */
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+      background: rgba(8,8,8,0.82);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1140px; margin: 0 auto;
+      padding: 0 32px; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700; font-size: 18px;
+      color: white; text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .nav-links { display: flex; align-items: center; gap: 36px; }
+    .nav-link {
+      font-size: 14px; font-weight: 500;
+      color: var(--text-3); text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    .nav-link:hover { color: white; }
+
+    /* ── Buttons ─────────────────────────────────────────── */
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 22px;
+      background: var(--brand); color: white;
+      font-family: 'Inter', sans-serif; font-weight: 500; font-size: 14px;
+      border-radius: 10px; text-decoration: none; border: 1px solid transparent;
+      transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .btn-primary:hover {
+      background: var(--brand-l);
+      box-shadow: 0 4px 20px rgba(37,99,235,0.4), 0 0 0 1px rgba(37,99,235,0.25);
+    }
+    .btn-primary:active { transform: scale(0.97); }
+
+    .btn-outline {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 22px;
+      background: transparent; color: white;
+      font-family: 'Inter', sans-serif; font-weight: 500; font-size: 14px;
+      border-radius: 10px; text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.14);
+      transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .btn-outline:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.25); }
+    .btn-outline:active { transform: scale(0.97); }
+
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 16px;
+      background: transparent; color: var(--text-2);
+      font-family: 'Inter', sans-serif; font-weight: 500; font-size: 14px;
+      border-radius: 10px; text-decoration: none; border: 1px solid transparent;
+      transition: color 0.2s ease, background-color 0.2s ease;
+    }
+    .btn-ghost:hover { color: white; background: rgba(255,255,255,0.04); }
+
+    /* ── Section anatomy ─────────────────────────────────── */
+    .wrap { max-width: 1140px; margin: 0 auto; padding: 0 32px; }
+    .section { padding: 96px 0; }
+    .section-sm { padding: 72px 0; }
+
+    .section-label {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--brand); margin-bottom: 18px;
+    }
+    .section-label::before {
+      content: ''; display: block; width: 28px; height: 1px; background: var(--brand);
+    }
+
+    .section-heading {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: clamp(2rem, 4vw, 2.75rem);
+      line-height: 1.08; letter-spacing: -0.03em;
+      color: white;
+    }
+
+    /* ── Text gradient ───────────────────────────────────── */
+    .text-grad {
+      background: linear-gradient(118deg, #fff 30%, #93c5fd 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    /* ── Proof tags ──────────────────────────────────────── */
+    .proof-tag {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 6px 14px; font-size: 12px; font-weight: 500;
+      color: var(--text-2); border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03); border-radius: 100px; white-space: nowrap;
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+    .proof-tag:hover {
+      background: rgba(37,99,235,0.1); border-color: rgba(37,99,235,0.35); color: #93c5fd;
+    }
+
+    /* ── Cards ───────────────────────────────────────────── */
+    .card {
+      background: var(--s1); border: 1px solid var(--border); border-radius: 16px;
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.45), 0 0 0 1px rgba(37,99,235,0.15);
+      border-color: rgba(255,255,255,0.11);
+    }
+
+    /* ── Project card ────────────────────────────────────── */
+    .proj-card {
+      position: relative; overflow: hidden; border-radius: 16px;
+      border: 1px solid var(--border);
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease;
+      cursor: default;
+    }
+    .proj-card:hover { transform: translateY(-5px); box-shadow: 0 24px 48px rgba(0,0,0,0.55); }
+    .proj-card:hover .proj-reveal { opacity: 1; }
+    .proj-reveal {
+      position: absolute; inset: 0; padding: 28px;
+      background: rgba(8,8,8,0.88);
+      display: flex; flex-direction: column; justify-content: flex-end; gap: 12px;
+      opacity: 0; transition: opacity 0.3s ease;
+    }
+    .proj-visual { height: 240px; position: relative; overflow: hidden; }
+
+    /* ── Capability card ─────────────────────────────────── */
+    .cap-card {
+      background: var(--s1); border: 1px solid var(--border); border-radius: 16px;
+      padding: 28px; height: 100%;
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+    .cap-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.4), 0 0 0 1px rgba(37,99,235,0.12);
+      border-color: rgba(255,255,255,0.1);
+    }
+
+    /* ── Timeline ────────────────────────────────────────── */
+    .tl-item { position: relative; padding-left: 36px; }
+    .tl-item + .tl-item { margin-top: 48px; }
+    .tl-line {
+      position: absolute; left: 4px; top: 20px; bottom: -48px;
+      width: 1px;
+      background: linear-gradient(to bottom, rgba(37,99,235,0.6), transparent);
+    }
+    .tl-item:last-child .tl-line { display: none; }
+    .tl-dot {
+      position: absolute; left: 0; top: 7px;
+      width: 9px; height: 9px; border-radius: 50%;
+      background: var(--brand);
+      box-shadow: 0 0 0 3px var(--bg), 0 0 12px rgba(37,99,235,0.55);
+    }
+
+    /* ── Skill pill ──────────────────────────────────────── */
+    .skill-pill {
+      display: inline-flex; align-items: center;
+      padding: 6px 14px; font-size: 12px; font-weight: 500;
+      color: var(--text-2); background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border); border-radius: 100px;
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+    .skill-pill:hover {
+      background: rgba(37,99,235,0.1); border-color: rgba(37,99,235,0.3); color: #93c5fd;
+    }
+
+    /* ── Social link ─────────────────────────────────────── */
+    .social-link {
+      display: inline-flex; align-items: center; gap: 12px;
+      padding: 16px 24px;
+      background: var(--s2); border: 1px solid var(--border); border-radius: 14px;
+      color: var(--text-2); text-decoration: none; font-size: 14px; font-weight: 500;
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    }
+    .social-link:hover {
+      background: rgba(37,99,235,0.1); border-color: rgba(37,99,235,0.3); color: white;
+      transform: translateY(-2px);
+    }
+    .social-link:active { transform: translateY(0); }
+
+    /* ── Article card ────────────────────────────────────── */
+    .article-card {
+      background: var(--s1); border: 1px solid var(--border); border-radius: 16px;
+      padding: 32px; height: 100%;
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+    .article-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(37,99,235,0.14);
+      border-color: rgba(255,255,255,0.1);
+    }
+
+    /* ── Fade-in on scroll ───────────────────────────────── */
+    .fade-up {
+      opacity: 0; transform: translateY(24px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+    .fade-up.vis { opacity: 1; transform: translateY(0); }
+
+    /* ── Stats strip ─────────────────────────────────────── */
+    .stat-item {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      padding: 24px 32px;
+      border-right: 1px solid var(--border);
+    }
+    .stat-item:last-child { border-right: none; }
+
+    /* ── Badge icon ──────────────────────────────────────── */
+    .cap-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: rgba(37,99,235,0.12); border: 1px solid rgba(37,99,235,0.2);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    /* ── Divider ─────────────────────────────────────────── */
+    .divider {
+      height: 1px; background: var(--border);
+      max-width: 1140px; margin: 0 auto;
+    }
+
+    /* ── Project modal ───────────────────────────────────── */
+    #proj-modal {
+      position: fixed; inset: 0; z-index: 800;
+      display: flex; justify-content: flex-end;
+      visibility: hidden;
+    }
+    #proj-modal.open { visibility: visible; }
+
+    #proj-backdrop {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0);
+      transition: background-color 0.35s ease;
+    }
+    #proj-modal.open #proj-backdrop { background: rgba(0,0,0,0.72); }
+
+    #proj-panel {
+      position: relative; z-index: 1;
+      width: min(700px, 92vw);
+      height: 100vh;
+      background: #111;
+      border-left: 1px solid rgba(255,255,255,0.08);
+      display: flex; flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.4s cubic-bezier(0.32,0.72,0,1);
+      overflow: hidden;
+    }
+    #proj-modal.open #proj-panel { transform: translateX(0); }
+
+    #proj-panel-scroll {
+      flex: 1; overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+    #proj-panel-scroll::-webkit-scrollbar { width: 3px; }
+    #proj-panel-scroll::-webkit-scrollbar-track { background: #111; }
+    #proj-panel-scroll::-webkit-scrollbar-thumb { background: var(--brand); border-radius: 2px; }
+
+    .modal-close-btn {
+      position: absolute; top: 20px; right: 20px; z-index: 10;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text-2); font-size: 18px; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    .modal-close-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+
+    /* n8n diagram nodes */
+    .n8n-node {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 14px; border-radius: 8px;
+      font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+      white-space: nowrap; border: 1px solid rgba(255,255,255,0.1);
+    }
+    .n8n-trigger { background: rgba(255,140,0,0.15); border-color: rgba(255,140,0,0.3); color: #ffa040; }
+    .n8n-ai      { background: rgba(147,51,234,0.15); border-color: rgba(147,51,234,0.3); color: #c084fc; }
+    .n8n-action  { background: rgba(37,99,235,0.15);  border-color: rgba(37,99,235,0.3);  color: #93c5fd; }
+    .n8n-output  { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.3); color: #6ee7b7; }
+    .n8n-arrow   { color: rgba(255,255,255,0.25); font-size: 16px; flex-shrink: 0; }
+
+    /* ── Glow pulse on status dot ────────────────────────── */
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(52,211,153,0.5); }
+      50% { opacity: 0.8; box-shadow: 0 0 0 5px rgba(52,211,153,0); }
+    }
+    .dot-pulse { animation: pulse-dot 2s ease infinite; }
+  </style>
+</head>
+
+<body>
+
+<!-- Dotted surface background canvas (Three.js) -->
+<div id="dotted-bg" style="position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;"></div>
+
+<!-- ═══════════════════════════════════════════════════════
+     NAVBAR
+════════════════════════════════════════════════════════ -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">Jeremy<span style="color:var(--brand)">.</span></a>
+    <div class="nav-links">
+      <a href="#about" class="nav-link">About</a>
+      <a href="#what-i-do" class="nav-link">Work</a>
+      <a href="#experience" class="nav-link">Experience</a>
+      <a href="#contact" class="nav-link">Contact</a>
+    </div>
+    <a href="Jeremy Jason Resume 2025 PM.pdf" download class="btn-primary" style="padding:10px 20px;font-size:13px;">
+      Resume
+      <svg width="13" height="13" fill="none" viewBox="0 0 16 16"><path d="M8 3v8M4 9l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </div>
+</nav>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     HERO
+════════════════════════════════════════════════════════ -->
+<section id="hero" style="position:relative;min-height:100vh;display:flex;align-items:center;padding-top:64px;overflow:hidden;">
+
+  <!-- Radial bg glows -->
+  <div style="position:absolute;inset:0;pointer-events:none;">
+    <div style="position:absolute;top:-20%;right:-5%;width:70%;height:100%;background:radial-gradient(ellipse at center, rgba(37,99,235,0.13) 0%, transparent 60%);"></div>
+    <div style="position:absolute;bottom:-10%;left:-10%;width:50%;height:60%;background:radial-gradient(ellipse at center, rgba(59,130,246,0.07) 0%, transparent 60%);"></div>
+    <div style="position:absolute;top:20%;right:20%;width:700px;height:700px;background:radial-gradient(ellipse at center, rgba(124,58,237,0.06) 0%, transparent 65%);"></div>
+    <!-- Subtle grid overlay -->
+    <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.015) 1px,transparent 1px);background-size:80px 80px;"></div>
+  </div>
+
+  <div class="wrap" style="width:100%;padding-top:60px;padding-bottom:80px;">
+    <div style="display:grid;grid-template-columns:1fr 420px;gap:80px;align-items:center;">
+
+      <!-- LEFT: Content -->
+      <div>
+        <!-- Status badge -->
+        <div style="display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:100px;border:1px solid rgba(255,255,255,0.09);background:rgba(255,255,255,0.04);font-size:12px;color:var(--text-2);margin-bottom:32px;">
+          <span class="dot-pulse" style="width:7px;height:7px;border-radius:50%;background:#34d399;display:inline-block;"></span>
+          Testing Analyst @ BCA · Building AI Products
+        </div>
+
+        <!-- Intro label -->
+        <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-2);letter-spacing:0.04em;margin-bottom:16px;">Hi, I'm Jeremy Jason —</div>
+
+        <!-- Headline -->
+        <h1 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(3rem,6vw,4.5rem);line-height:1.03;letter-spacing:-0.035em;color:white;margin-bottom:24px;">
+          Building<br/>
+          <span class="text-grad">AI-Assisted</span><br/>
+          Products &amp; Workflows
+        </h1>
+
+        <!-- Sub -->
+        <p style="font-size:17px;color:var(--text-2);line-height:1.75;max-width:520px;margin-bottom:36px;">
+          Testing Analyst at Bank Central Asia with experience in Product Management, AI automation, digital operations, and scalable workflow systems.
+        </p>
+
+        <!-- CTAs -->
+        <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:40px;">
+          <a href="#work" class="btn-primary">
+            View Projects
+            <svg width="15" height="15" fill="none" viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a href="Jeremy Jason Resume 2025 PM.pdf" download class="btn-outline">Download Resume</a>
+          <a href="#contact" class="btn-ghost">Contact Me</a>
+        </div>
+
+        <!-- Proof tags -->
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <span class="proof-tag">
+            <svg width="12" height="12" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" stroke="var(--brand)" stroke-width="1.5"/><path d="M5 8l2 2 4-4" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Testing Analyst @ BCA
+          </span>
+          <span class="proof-tag">
+            <svg width="12" height="12" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" stroke="var(--brand)" stroke-width="1.5"/><path d="M5 8l2 2 4-4" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Ex Project / Product Manager
+          </span>
+          <span class="proof-tag">
+            <svg width="12" height="12" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" stroke="var(--brand)" stroke-width="1.5"/><path d="M5 8l2 2 4-4" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Apple Developer Academy
+          </span>
+          <span class="proof-tag">
+            <svg width="12" height="12" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" stroke="var(--brand)" stroke-width="1.5"/><path d="M5 8l2 2 4-4" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            140K+ Social Audience
+          </span>
+          <span class="proof-tag">
+            <svg width="12" height="12" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" stroke="var(--brand)" stroke-width="1.5"/><path d="M5 8l2 2 4-4" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            AI &amp; Automation Builder
+          </span>
+        </div>
+      </div>
+
+      <!-- RIGHT: Photo -->
+      <div style="position:relative;display:flex;justify-content:flex-end;">
+        <!-- Glow ring behind -->
+        <div style="position:absolute;inset:-40px;border-radius:32px;background:radial-gradient(ellipse at 60% 40%, rgba(37,99,235,0.3) 0%, transparent 65%);pointer-events:none;filter:blur(20px);"></div>
+
+        <!-- Photo frame -->
+        <div style="position:relative;width:400px;height:500px;border-radius:24px;overflow:hidden;border:1px solid rgba(37,99,235,0.35);box-shadow:0 0 0 1px rgba(37,99,235,0.12), 0 32px 64px rgba(0,0,0,0.7), 0 0 80px rgba(37,99,235,0.15), inset 0 1px 0 rgba(255,255,255,0.08);">
+          <img src="Brand_Assets/Profile_picture.jpg" alt="Jeremy Jason" style="width:100%;height:100%;object-fit:cover;object-position:50% 20%;transform:scale(1.05);" />
+          <!-- Bottom gradient -->
+          <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(8,8,8,0.7) 0%, transparent 50%);"></div>
+          <!-- Blue color treatment -->
+          <div style="position:absolute;inset:0;background:radial-gradient(ellipse at top left, rgba(37,99,235,0.18) 0%, transparent 55%);mix-blend-mode:screen;"></div>
+
+          <!-- Floating name badge -->
+          <div style="position:absolute;bottom:24px;left:24px;right:24px;padding:14px 18px;background:rgba(8,8,8,0.78);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:14px;border:1px solid rgba(255,255,255,0.09);">
+            <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;color:white;letter-spacing:-0.02em;">Jeremy Jason</div>
+            <div style="font-size:12px;color:var(--text-2);margin-top:3px;">AI &amp; Product Builder · Jakarta, Indonesia</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     STATS STRIP
+════════════════════════════════════════════════════════ -->
+<div style="background:var(--s1);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="wrap">
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);">
+      <div class="stat-item">
+        <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:28px;letter-spacing:-0.03em;color:white;">2+</span>
+        <span style="font-size:12px;color:var(--text-2);text-align:center;">Years at BCA</span>
+      </div>
+      <div class="stat-item">
+        <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:28px;letter-spacing:-0.03em;color:white;">10+</span>
+        <span style="font-size:12px;color:var(--text-2);text-align:center;">Projects Managed</span>
+      </div>
+      <div class="stat-item">
+        <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:28px;letter-spacing:-0.03em;color:white;">140K+</span>
+        <span style="font-size:12px;color:var(--text-2);text-align:center;">Social Audience</span>
+      </div>
+      <div class="stat-item">
+        <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:28px;letter-spacing:-0.03em;color:white;">4</span>
+        <span style="font-size:12px;color:var(--text-2);text-align:center;">Companies</span>
+      </div>
+      <div class="stat-item">
+        <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:28px;letter-spacing:-0.03em;color:white;">5+</span>
+        <span style="font-size:12px;color:var(--text-2);text-align:center;">Years Experience</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     ABOUT
+════════════════════════════════════════════════════════ -->
+<section id="about" class="section">
+  <div class="wrap">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;">
+
+      <!-- Left -->
+      <div class="fade-up">
+        <div class="section-label">About Me</div>
+        <h2 class="section-heading" style="margin-bottom:28px;">
+          I build systems that <span class="text-grad">bridge ideas</span> and execution
+        </h2>
+        <p style="font-size:16px;color:var(--text-2);line-height:1.8;margin-bottom:20px;">
+          I enjoy building systems, workflows, and digital experiences that simplify operations and improve how people interact with technology.
+        </p>
+        <p style="font-size:16px;color:var(--text-2);line-height:1.8;margin-bottom:20px;">
+          My background combines product thinking, project execution, QA/system analysis, AI experimentation, and creative problem-solving — allowing me to bridge technical and operational perspectives effectively.
+        </p>
+        <p style="font-size:16px;color:var(--text-2);line-height:1.8;">
+          Beyond my professional work, I actively explore AI-assisted development, automation workflows, digital content systems, and emerging technologies.
+        </p>
+      </div>
+
+      <!-- Right: Key traits -->
+      <div class="fade-up" style="display:flex;flex-direction:column;gap:16px;padding-top:48px;">
+
+        <div class="card" style="padding:24px;display:flex;gap:16px;align-items:flex-start;">
+          <div class="cap-icon" style="margin-bottom:0;flex-shrink:0;">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div>
+            <div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;color:white;margin-bottom:6px;">Product × AI</div>
+            <div style="font-size:13px;color:var(--text-2);line-height:1.65;">Combining product thinking with AI-assisted development to ship faster and smarter.</div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:24px;display:flex;gap:16px;align-items:flex-start;">
+          <div class="cap-icon" style="margin-bottom:0;flex-shrink:0;">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="var(--brand)" stroke-width="1.5"/><path d="M12 8v4l3 3" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div>
+            <div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;color:white;margin-bottom:6px;">Systems Thinker</div>
+            <div style="font-size:13px;color:var(--text-2);line-height:1.65;">QA background gives me a sharp eye for edge cases, operational bottlenecks, and reliability.</div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:24px;display:flex;gap:16px;align-items:flex-start;">
+          <div class="cap-icon" style="margin-bottom:0;flex-shrink:0;">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="var(--brand)" stroke-width="1.5"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div>
+            <div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;color:white;margin-bottom:6px;">Cross-Functional Bridge</div>
+            <div style="font-size:13px;color:var(--text-2);line-height:1.65;">Fluent across stakeholders, developers, designers, and business teams.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     WHAT I DO
+════════════════════════════════════════════════════════ -->
+<section id="what-i-do" class="section">
+  <div class="wrap">
+    <div class="fade-up" style="text-align:center;margin-bottom:64px;">
+      <div class="section-label" style="justify-content:center;">Capabilities</div>
+      <h2 class="section-heading">What I Do</h2>
+    </div>
+
+    <!-- Grid: 3 top, 2 bottom -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px;" class="fade-up">
+
+      <!-- 1 -->
+      <div class="cap-card">
+        <div class="cap-icon">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--brand);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">01</div>
+        <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;color:white;margin-bottom:12px;letter-spacing:-0.02em;">AI &amp; Automation</h3>
+        <p style="font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:18px;">Using AI to accelerate execution, product building, and operational workflows.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <span class="skill-pill">Prompt Engineering</span>
+          <span class="skill-pill">Workflow Logic</span>
+          <span class="skill-pill">Rapid Experimentation</span>
+          <span class="skill-pill">Vibe Coding</span>
+        </div>
+      </div>
+
+      <!-- 2 -->
+      <div class="cap-card">
+        <div class="cap-icon">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--brand);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">02</div>
+        <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;color:white;margin-bottom:12px;letter-spacing:-0.02em;">AI-Assisted Building</h3>
+        <p style="font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:18px;">Building products end-to-end with AI — from rapid prototypes and landing pages to internal tools, while exploring UI concepts and visual directions through vibe design.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <span class="skill-pill">Claude</span>
+          <span class="skill-pill">VS Code</span>
+          <span class="skill-pill">n8n</span>
+          <span class="skill-pill">Power Automate</span>
+          <span class="skill-pill">UI/UX Thinking</span>
+          <span class="skill-pill">Vibe Design</span>
+        </div>
+      </div>
+
+      <!-- 3 -->
+      <div class="cap-card">
+        <div class="cap-icon">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--brand);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">03</div>
+        <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;color:white;margin-bottom:12px;letter-spacing:-0.02em;">Content Creation</h3>
+        <p style="font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:18px;">Building a personal brand as an AI & productivity educator — creating short-form content about tools, workflows, and digital thinking across platforms with 140K+ combined audience.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <span class="skill-pill">Short-form Video</span>
+          <span class="skill-pill">Instagram</span>
+          <span class="skill-pill">TikTok</span>
+          <span class="skill-pill">Threads</span>
+          <span class="skill-pill">AI Education</span>
+          <span class="skill-pill">Audience Building</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="fade-up">
+
+      <!-- 4 -->
+      <div class="cap-card">
+        <div class="cap-icon">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--brand);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">04</div>
+        <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;color:white;margin-bottom:12px;letter-spacing:-0.02em;">Product &amp; Project Management</h3>
+        <p style="font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:18px;">Managing cross-functional execution between stakeholders, designers, developers, and business teams.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <span class="skill-pill">Scope Management</span>
+          <span class="skill-pill">Sprint Coordination</span>
+          <span class="skill-pill">Stakeholder Comms</span>
+          <span class="skill-pill">Agile / Scrum</span>
+        </div>
+      </div>
+
+      <!-- 5 -->
+      <div class="cap-card">
+        <div class="cap-icon">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--brand);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">05</div>
+        <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;color:white;margin-bottom:12px;letter-spacing:-0.02em;">Quality &amp; Systems Thinking</h3>
+        <p style="font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:18px;">Strong focus on system reliability, operational quality, testing workflows, and release validation — including automation testing with Katalon and Selenium for scalable, repeatable test coverage.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <span class="skill-pill">UAT</span>
+          <span class="skill-pill">QA Testing</span>
+          <span class="skill-pill">System Analysis</span>
+          <span class="skill-pill">E2E Testing</span>
+          <span class="skill-pill">Katalon</span>
+          <span class="skill-pill">Selenium</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     FEATURED PROJECTS
+════════════════════════════════════════════════════════ -->
+<section id="work" class="section">
+  <div class="wrap">
+    <div class="fade-up" style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:52px;">
+      <div>
+        <div class="section-label">Featured Work</div>
+        <h2 class="section-heading">Selected Projects</h2>
+      </div>
+    </div>
+
+    <!-- 3-col grid -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;" class="fade-up">
+
+      <!-- P1: AI Threads -->
+      <div class="proj-card" data-project="ai-threads" style="cursor:pointer;" onclick="openProject('ai-threads')">
+        <div class="proj-visual" style="background:linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+            <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:72px;color:rgba(255,255,255,0.07);letter-spacing:-0.04em;user-select:none;">AI</span>
+          </div>
+          <div style="position:absolute;top:20px;left:20px;right:20px;">
+            <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;font-size:11px;color:rgba(255,255,255,0.6);font-family:'JetBrains Mono',monospace;">
+              generating content persona...
+            </div>
+          </div>
+          <div style="position:absolute;inset:0;background:linear-gradient(to bottom, transparent 40%, rgba(15,12,41,0.8) 100%);"></div>
+        </div>
+        <div style="padding:22px;">
+          <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--brand);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">Automation · AI</div>
+          <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;color:white;margin-bottom:8px;letter-spacing:-0.02em;">AI Threads Automation System</h3>
+          <p style="font-size:13px;color:var(--text-2);line-height:1.65;">Built an AI workflow that generates personas, content pillars, topics, and automates posting.</p>
+        </div>
+        <div class="proj-reveal">
+          <div style="font-size:13px;color:var(--text-2);line-height:1.65;flex:1;display:flex;align-items:flex-end;">Faster content planning · Scalable system · Reduced manual effort</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <span class="skill-pill" style="font-size:11px;">AI Tools</span>
+            <span class="skill-pill" style="font-size:11px;">Workflow Automation</span>
+            <span class="skill-pill" style="font-size:11px;">Prompt Engineering</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- P2: BCA -->
+      <div class="proj-card" data-project="bca" style="cursor:pointer;" onclick="openProject('bca')">
+        <div class="proj-visual" style="background:linear-gradient(135deg, #0c1445 0%, #1e3a8a 50%, #0d4a8a 100%);">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+            <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:56px;color:rgba(255,255,255,0.07);letter-spacing:-0.04em;user-select:none;">BCA</span>
+          </div>
+          <div style="position:absolute;top:20px;left:20px;right:20px;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:8px;background:rgba(37,99,235,0.15);border:1px solid rgba(37,99,235,0.25);border-radius:8px;padding:8px 12px;">
+              <div style="width:6px;height:6px;border-radius:50%;background:#34d399;flex-shrink:0;"></div>
+              <span style="font-size:11px;color:rgba(255,255,255,0.55);font-family:'JetBrains Mono',monospace;">automation running...</span>
+            </div>
+          </div>
+          <div style="position:absolute;inset:0;background:linear-gradient(to bottom, transparent 40%, rgba(12,20,69,0.85) 100%);"></div>
+        </div>
+        <div style="padding:22px;">
+          <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--brand);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">QA · Automation</div>
+          <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;color:white;margin-bottom:8px;letter-spacing:-0.02em;">AI &amp; Workflow Automation at BCA</h3>
+          <p style="font-size:13px;color:var(--text-2);line-height:1.65;">Created automation scripts and AI-assisted workflows to accelerate testing across 10+ concurrent projects.</p>
+        </div>
+        <div class="proj-reveal">
+          <div style="font-size:13px;color:var(--text-2);line-height:1.65;flex:1;display:flex;align-items:flex-end;">Automation · QA Optimization · Operational Scalability</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <span class="skill-pill" style="font-size:11px;">Power Automate</span>
+            <span class="skill-pill" style="font-size:11px;">AI Workflows</span>
+            <span class="skill-pill" style="font-size:11px;">QA</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- P3: CASION -->
+      <div class="proj-card" data-project="casion" style="cursor:pointer;" onclick="openProject('casion')">
+        <div class="proj-visual" style="background:linear-gradient(135deg, #052e16 0%, #064e3b 50%, #065f46 100%);">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+            <svg width="72" height="72" fill="none" viewBox="0 0 24 24" style="opacity:0.12;"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="white" stroke-width="1"/></svg>
+          </div>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+            <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:32px;color:rgba(255,255,255,0.15);letter-spacing:-0.03em;">EV</div>
+          </div>
+          <div style="position:absolute;bottom:20px;left:20px;right:20px;">
+            <div style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.25);border-radius:8px;padding:8px 12px;font-size:11px;color:rgba(255,255,255,0.55);font-family:'JetBrains Mono',monospace;">
+              charging — 72% complete
+            </div>
+          </div>
+          <div style="position:absolute;inset:0;background:linear-gradient(to bottom, transparent 40%, rgba(5,46,22,0.85) 100%);"></div>
+        </div>
+        <div style="padding:22px;">
+          <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--brand);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">Product · Mobile App</div>
+          <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;color:white;margin-bottom:8px;letter-spacing:-0.02em;">CASION — EV Charging System</h3>
+          <p style="font-size:13px;color:var(--text-2);line-height:1.65;">Led product workflow from idea to app for an EV charging platform — user flows, wireframes, timelines.</p>
+        </div>
+        <div class="proj-reveal">
+          <div style="font-size:13px;color:var(--text-2);line-height:1.65;flex:1;display:flex;align-items:flex-end;">Idea → App · First project led end-to-end</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <span class="skill-pill" style="font-size:11px;">User Flow</span>
+            <span class="skill-pill" style="font-size:11px;">Wireframing</span>
+            <span class="skill-pill" style="font-size:11px;">PM</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- P4: NOBU NEO -->
+      <div class="proj-card" data-project="nobu" style="cursor:pointer;" onclick="openProject('nobu')">
+        <div class="proj-visual" style="background:linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #1a2e4a 100%);">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+            <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:48px;color:rgba(255,255,255,0.07);letter-spacing:-0.04em;user-select:none;">NEO</span>
+          </div>
+          <div style="position:absolute;top:20px;left:50%;transform:translateX(-50%);white-space:nowrap;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);border-radius:100px;padding:4px 14px;font-size:11px;color:rgba(255,255,255,0.45);font-family:'JetBrains Mono',monospace;">
+            mobile banking revamp
+          </div>
+          <div style="position:absolute;inset:0;background:linear-gradient(to bottom, transparent 40%, rgba(15,23,42,0.85) 100%);"></div>
+        </div>
+        <div style="padding:22px;">
+          <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--brand);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">UX · Product</div>
+          <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;color:white;margin-bottom:8px;letter-spacing:-0.02em;">NOBU NEO Revamp</h3>
+          <p style="font-size:13px;color:var(--text-2);line-height:1.65;">Revamped Nobu Bank's mobile banking app balancing user requests with usability principles and competitor research.</p>
+        </div>
+        <div class="proj-reveal">
+          <div style="font-size:13px;color:var(--text-2);line-height:1.65;flex:1;display:flex;align-items:flex-end;">Improved clarity · Better financial UX · Research-backed decisions</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <span class="skill-pill" style="font-size:11px;">UX Research</span>
+            <span class="skill-pill" style="font-size:11px;">Feature Flow</span>
+            <span class="skill-pill" style="font-size:11px;">Banking</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- P5: DOMI BED -->
+      <div class="proj-card" data-project="domi" style="cursor:pointer;" onclick="openProject('domi')">
+        <div class="proj-visual" style="background:linear-gradient(135deg, #431407 0%, #9a3412 50%, #7c2d12 100%);">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+            <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:56px;color:rgba(255,255,255,0.08);letter-spacing:-0.04em;user-select:none;">DOMI</span>
+          </div>
+          <div style="position:absolute;top:20px;right:20px;width:40px;height:40px;border-radius:10px;background:rgba(251,146,60,0.2);border:1px solid rgba(251,146,60,0.3);display:flex;align-items:center;justify-content:center;">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" stroke="rgba(251,146,60,0.8)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div style="position:absolute;inset:0;background:linear-gradient(to bottom, transparent 40%, rgba(67,20,7,0.85) 100%);"></div>
+        </div>
+        <div style="padding:22px;">
+          <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--brand);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">Branding · Creative</div>
+          <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;color:white;margin-bottom:8px;letter-spacing:-0.02em;">DOMI BED Brand Guideline</h3>
+          <p style="font-size:13px;color:var(--text-2);line-height:1.65;">Led branding and packaging direction for a home living brand — guidelines, audience research, visual direction.</p>
+        </div>
+        <div class="proj-reveal">
+          <div style="font-size:13px;color:var(--text-2);line-height:1.65;flex:1;display:flex;align-items:flex-end;">Consistent branding · Target-aligned packaging · Creative system</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <span class="skill-pill" style="font-size:11px;">Brand Guidelines</span>
+            <span class="skill-pill" style="font-size:11px;">Packaging</span>
+            <span class="skill-pill" style="font-size:11px;">Visual Direction</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- P6: Creator & AI -->
+      <div class="proj-card" data-project="creator" style="cursor:pointer;" onclick="openProject('creator')">
+        <div class="proj-visual" style="background:linear-gradient(135deg, #2d1b69 0%, #5b21b6 50%, #4c1d95 100%);">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;">
+            <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:40px;color:rgba(255,255,255,0.08);letter-spacing:-0.03em;user-select:none;">140K+</span>
+          </div>
+          <div style="position:absolute;top:16px;left:16px;right:16px;display:flex;gap:6px;">
+            <div style="flex:1;background:rgba(255,255,255,0.06);border-radius:8px;padding:8px 10px;font-size:10px;color:rgba(255,255,255,0.4);font-family:'JetBrains Mono',monospace;text-align:center;">IG 90K+</div>
+            <div style="flex:1;background:rgba(255,255,255,0.06);border-radius:8px;padding:8px 10px;font-size:10px;color:rgba(255,255,255,0.4);font-family:'JetBrains Mono',monospace;text-align:center;">TT 50K+</div>
+            <div style="flex:1;background:rgba(255,255,255,0.06);border-radius:8px;padding:8px 10px;font-size:10px;color:rgba(255,255,255,0.4);font-family:'JetBrains Mono',monospace;text-align:center;">TH 23K+</div>
+          </div>
+          <div style="position:absolute;inset:0;background:linear-gradient(to bottom, transparent 40%, rgba(45,27,105,0.85) 100%);"></div>
+        </div>
+        <div style="padding:22px;">
+          <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--brand);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">Content · AI</div>
+          <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;color:white;margin-bottom:8px;letter-spacing:-0.02em;">Creator &amp; AI Content Systems</h3>
+          <p style="font-size:13px;color:var(--text-2);line-height:1.65;">Built an AI-focused personal brand with 140K+ combined audience across Instagram, TikTok, Threads, and more.</p>
+        </div>
+        <div class="proj-reveal">
+          <div style="font-size:13px;color:var(--text-2);line-height:1.65;flex:1;display:flex;align-items:flex-end;">Audience psychology · Content systems · Analytics · Storytelling</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <span class="skill-pill" style="font-size:11px;">Content Strategy</span>
+            <span class="skill-pill" style="font-size:11px;">AI Systems</span>
+            <span class="skill-pill" style="font-size:11px;">Growth</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     HOW I THINK
+════════════════════════════════════════════════════════ -->
+<section class="section" style="background:var(--s1);">
+  <div class="wrap">
+    <div class="fade-up" style="text-align:center;margin-bottom:56px;">
+      <div class="section-label" style="justify-content:center;">Perspective</div>
+      <h2 class="section-heading">How I Think</h2>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;" class="fade-up">
+
+      <!-- A1 -->
+      <div class="article-card">
+        <div style="display:inline-flex;align-items:center;gap:8px;padding:4px 12px;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.2);border-radius:100px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--brand);margin-bottom:24px;">Insight 01</div>
+        <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;color:white;margin-bottom:16px;letter-spacing:-0.025em;line-height:1.3;">What QA Taught Me About Product Thinking</h3>
+        <p style="font-size:14px;color:var(--text-2);line-height:1.75;">Understanding edge cases, operational bottlenecks, and user pain points helped me develop a stronger product mindset and attention to system reliability. QA isn't just about testing — it's about deeply understanding how systems break, and building better ones.</p>
+      </div>
+
+      <!-- A2 -->
+      <div class="article-card">
+        <div style="display:inline-flex;align-items:center;gap:8px;padding:4px 12px;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.2);border-radius:100px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--brand);margin-bottom:24px;">Insight 02</div>
+        <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;color:white;margin-bottom:16px;letter-spacing:-0.025em;line-height:1.3;">Why AI + Automation Will Change Operational Work</h3>
+        <p style="font-size:14px;color:var(--text-2);line-height:1.75;">AI and automation are shifting how modern teams operate by reducing repetitive work and increasing scalability. Teams that learn to leverage these tools early will have a significant competitive advantage in execution speed and output quality.</p>
+      </div>
+
+      <!-- A3 -->
+      <div class="article-card">
+        <div style="display:inline-flex;align-items:center;gap:8px;padding:4px 12px;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.2);border-radius:100px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--brand);margin-bottom:24px;">Insight 03</div>
+        <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;color:white;margin-bottom:16px;letter-spacing:-0.025em;line-height:1.3;">How I Build Faster Using AI-Assisted Workflows</h3>
+        <p style="font-size:14px;color:var(--text-2);line-height:1.75;">Exploring AI-assisted development and design workflows has significantly improved my speed in prototyping, ideation, and execution. The shift isn't just about tools — it's a fundamentally different way of approaching problems and building solutions.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     EXPERIENCE
+════════════════════════════════════════════════════════ -->
+<section id="experience" class="section">
+  <div class="wrap">
+    <div style="display:grid;grid-template-columns:1fr 1.5fr;gap:96px;align-items:start;">
+
+      <!-- Left: Heading -->
+      <div class="fade-up" style="position:sticky;top:96px;">
+        <div class="section-label">Career</div>
+        <h2 class="section-heading" style="margin-bottom:24px;">Experience &amp; Background</h2>
+        <p style="font-size:15px;color:var(--text-2);line-height:1.75;">5+ years across product management, QA, project coordination, and AI-assisted development.</p>
+      </div>
+
+      <!-- Right: Timeline -->
+      <div class="fade-up">
+
+        <!-- BCA -->
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-line"></div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+            <div>
+              <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;color:white;letter-spacing:-0.02em;">Bank Central Asia</div>
+              <div style="font-size:14px;color:var(--brand);font-weight:500;margin-top:3px;">Testing Analyst</div>
+            </div>
+            <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--text-3);white-space:nowrap;padding-top:4px;">Jul 2023 — Present</div>
+          </div>
+          <div class="card" style="padding:20px;margin-bottom:0;">
+            <p style="font-size:13px;color:var(--text-2);line-height:1.75;margin-bottom:16px;">Working closely with Product Owners, Business Analysts, and Developers to ensure product quality, system reliability, and alignment between business requirements and technical implementation.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              <span class="skill-pill" style="font-size:11px;">E2E Testing</span>
+              <span class="skill-pill" style="font-size:11px;">Requirement Validation</span>
+              <span class="skill-pill" style="font-size:11px;">Power Automate</span>
+              <span class="skill-pill" style="font-size:11px;">AI Workflows</span>
+              <span class="skill-pill" style="font-size:11px;">10+ Projects</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nice to Meet You Studio -->
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-line"></div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+            <div>
+              <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;color:white;letter-spacing:-0.02em;">Nice to Meet You Studio</div>
+              <div style="font-size:14px;color:var(--brand);font-weight:500;margin-top:3px;">Project / Product Manager</div>
+            </div>
+            <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--text-3);white-space:nowrap;padding-top:4px;">Sep 2021 — Jul 2023</div>
+          </div>
+          <div class="card" style="padding:20px;">
+            <p style="font-size:13px;color:var(--text-2);line-height:1.75;margin-bottom:16px;">Managed digital product and branding projects for 10+ companies. 9 out of 10 projects delivered on schedule. Projects included Nobu Bank, CASION, SMDV, Otoklix, and more.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              <span class="skill-pill" style="font-size:11px;">Project Leadership</span>
+              <span class="skill-pill" style="font-size:11px;">Stakeholder Management</span>
+              <span class="skill-pill" style="font-size:11px;">Digital Products</span>
+              <span class="skill-pill" style="font-size:11px;">Branding</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Printerous -->
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-line"></div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+            <div>
+              <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;color:white;letter-spacing:-0.02em;">Printerous</div>
+              <div style="font-size:14px;color:var(--brand);font-weight:500;margin-top:3px;">Product Manager Intern</div>
+            </div>
+            <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--text-3);white-space:nowrap;padding-top:4px;">Mar 2021 — Aug 2021</div>
+          </div>
+          <div class="card" style="padding:20px;">
+            <p style="font-size:13px;color:var(--text-2);line-height:1.75;margin-bottom:16px;">Learned product development workflows in agile environments while collaborating with developers, designers, and QA teams on sprint planning using Scrum.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              <span class="skill-pill" style="font-size:11px;">Scrum</span>
+              <span class="skill-pill" style="font-size:11px;">Sprint Planning</span>
+              <span class="skill-pill" style="font-size:11px;">Agile</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Apple Developer Academy -->
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+            <div>
+              <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;color:white;letter-spacing:-0.02em;">Apple Developer Academy</div>
+              <div style="font-size:14px;color:var(--brand);font-weight:500;margin-top:3px;">Junior PM &amp; iOS Developer Intern</div>
+            </div>
+            <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--text-3);white-space:nowrap;padding-top:4px;">Mar 2020 — Dec 2020</div>
+          </div>
+          <div class="card" style="padding:20px;">
+            <p style="font-size:13px;color:var(--text-2);line-height:1.75;margin-bottom:16px;">Led app project coordination in agile teams while learning iOS development architecture, API integration, and product documentation standards.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              <span class="skill-pill" style="font-size:11px;">iOS Development</span>
+              <span class="skill-pill" style="font-size:11px;">Team Leadership</span>
+              <span class="skill-pill" style="font-size:11px;">Agile</span>
+              <span class="skill-pill" style="font-size:11px;">API Integration</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     EDUCATION + SKILLS
+════════════════════════════════════════════════════════ -->
+<section class="section" style="background:var(--s1);">
+  <div class="wrap">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:64px;">
+
+      <!-- Education -->
+      <div class="fade-up">
+        <div class="section-label">Education</div>
+        <h2 class="section-heading" style="margin-bottom:32px;">Academic Background</h2>
+        <div class="card" style="padding:32px;">
+          <div style="display:flex;align-items:flex-start;gap:20px;">
+            <div style="width:52px;height:52px;border-radius:14px;background:rgba(37,99,235,0.12);border:1px solid rgba(37,99,235,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5zM12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" stroke="var(--brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div>
+              <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;color:white;letter-spacing:-0.02em;margin-bottom:4px;">Bina Nusantara University</div>
+              <div style="font-size:14px;color:var(--brand);font-weight:500;margin-bottom:8px;">Bachelor of Computer Science</div>
+              <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--text-3);margin-bottom:16px;">2017 — 2021 · GPA 3.67 / 4.00</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                <span class="skill-pill" style="font-size:11px;">Software Development</span>
+                <span class="skill-pill" style="font-size:11px;">System Thinking</span>
+                <span class="skill-pill" style="font-size:11px;">UI/UX</span>
+                <span class="skill-pill" style="font-size:11px;">Digital Product</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Skills -->
+      <div class="fade-up">
+        <div class="section-label">Skills</div>
+        <h2 class="section-heading" style="margin-bottom:32px;">Technical Profile</h2>
+
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          <div>
+            <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text-3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">Product</div>
+            <div style="display:flex;flex-wrap:wrap;gap:7px;">
+              <span class="skill-pill">Product Thinking</span>
+              <span class="skill-pill">Agile</span>
+              <span class="skill-pill">Scrum</span>
+              <span class="skill-pill">Requirement Gathering</span>
+              <span class="skill-pill">Stakeholder Management</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text-3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">Technical</div>
+            <div style="display:flex;flex-wrap:wrap;gap:7px;">
+              <span class="skill-pill">QA Testing</span>
+              <span class="skill-pill">UAT</span>
+              <span class="skill-pill">System Analysis</span>
+              <span class="skill-pill">API Understanding</span>
+              <span class="skill-pill">Power Automate</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text-3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">AI &amp; Automation</div>
+            <div style="display:flex;flex-wrap:wrap;gap:7px;">
+              <span class="skill-pill">Prompt Engineering</span>
+              <span class="skill-pill">AI Workflows</span>
+              <span class="skill-pill">Vibe Coding</span>
+              <span class="skill-pill">Automation Systems</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text-3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">Creative</div>
+            <div style="display:flex;flex-wrap:wrap;gap:7px;">
+              <span class="skill-pill">UI/UX Thinking</span>
+              <span class="skill-pill">Content Strategy</span>
+              <span class="skill-pill">Storytelling</span>
+              <span class="skill-pill">Branding Direction</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     CONTACT
+════════════════════════════════════════════════════════ -->
+<section id="contact" class="section" style="position:relative;overflow:hidden;">
+  <!-- Contact section bg glow -->
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:800px;height:400px;background:radial-gradient(ellipse at center, rgba(37,99,235,0.09) 0%, transparent 65%);pointer-events:none;"></div>
+  <div class="wrap" style="position:relative;z-index:1;">
+    <div class="fade-up" style="text-align:center;margin-bottom:64px;">
+      <div class="section-label" style="justify-content:center;">Let's Connect</div>
+      <h2 class="section-heading" style="margin-bottom:20px;">Let's Build Something Together</h2>
+      <p style="font-size:17px;color:var(--text-2);max-width:520px;margin:0 auto;line-height:1.75;">
+        Open to new opportunities, collaborations, and conversations about AI, product, and digital experiences.
+      </p>
+    </div>
+
+    <div class="fade-up" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:640px;margin:0 auto 40px;">
+      <a href="mailto:jjeremy.jjason@gmail.com" class="social-link">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        jjeremy.jjason@gmail.com
+      </a>
+      <a href="https://linkedin.com/in/jeremy-jason/" target="_blank" rel="noopener" class="social-link">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="4" cy="4" r="2" stroke="currentColor" stroke-width="1.5"/></svg>
+        linkedin.com/in/jeremy-jason
+      </a>
+      <a href="https://instagram.com/heyjasz" target="_blank" rel="noopener" class="social-link">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" stroke-width="1.5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" stroke="currentColor" stroke-width="1.5"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        @heyjasz
+      </a>
+      <a href="https://tiktok.com/@heyjasz" target="_blank" rel="noopener" class="social-link">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M9 12a4 4 0 104 4V4a5 5 0 005 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        @heyjasz
+      </a>
+    </div>
+
+    <div class="fade-up" style="text-align:center;">
+      <a href="mailto:jjeremy.jjason@gmail.com" class="btn-primary" style="font-size:15px;padding:14px 32px;">
+        Send me a message
+        <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════════════════ -->
+<footer style="background:var(--s1);border-top:1px solid var(--border);padding:48px 0 0;">
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:40px;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;color:white;letter-spacing:-0.02em;margin-bottom:6px;">Jeremy Jason</div>
+        <div style="font-size:13px;color:var(--text-3);">AI &amp; Product Builder · Jakarta, Indonesia</div>
+      </div>
+      <div style="display:flex;gap:24px;align-items:center;">
+        <a href="#about" class="nav-link" style="font-size:13px;">About</a>
+        <a href="#work" class="nav-link" style="font-size:13px;">Work</a>
+        <a href="#experience" class="nav-link" style="font-size:13px;">Experience</a>
+        <a href="#contact" class="nav-link" style="font-size:13px;">Contact</a>
+      </div>
+    </div>
+
+    <!-- Large name -->
+    <div style="padding:40px 0 48px;overflow:hidden;">
+      <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(60px,12vw,130px);letter-spacing:-0.05em;line-height:0.9;color:rgba(255,255,255,0.07);user-select:none;white-space:nowrap;">
+        JEREMY JASON
+      </div>
+    </div>
+
+    <div style="padding-bottom:28px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:12px;color:var(--text-3);">© 2025 Jeremy Jason. All rights reserved.</div>
+      <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--text-3);">Built with AI-assisted development</div>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     SCROLL ANIMATIONS
+════════════════════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════════════
+     PROJECT DETAIL MODAL
+════════════════════════════════════════════════════════ -->
+<div id="proj-modal" role="dialog" aria-modal="true">
+  <div id="proj-backdrop" onclick="closeProject()"></div>
+  <div id="proj-panel">
+    <button class="modal-close-btn" onclick="closeProject()" aria-label="Close">
+      <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <div id="proj-panel-scroll">
+      <div id="proj-modal-body" style="padding:48px 40px 64px;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const observer = new IntersectionObserver(
+    (entries) => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); observer.unobserve(e.target); } }),
+    { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+  );
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+
+<!-- ── Project modal data + logic ── -->
+<script>
+const PROJECTS = {
+
+  'ai-threads': {
+    category: 'Automation · AI',
+    title: 'AI Threads Automation System',
+    gradient: 'linear-gradient(135deg,#0f0c29,#302b63,#24243e)',
+    role: 'Builder / System Designer',
+    context: 'Personal Project',
+    body: `
+      <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(255,200,100,0.1);border:1px solid rgba(255,200,100,0.2);border-radius:100px;font-size:12px;font-family:'JetBrains Mono',monospace;color:#fcd34d;margin-bottom:32px;">
+        🚧 &nbsp;Details coming soon
+      </div>
+      <p style="font-size:15px;color:var(--text-2);line-height:1.8;margin-bottom:20px;">
+        An AI-assisted workflow system that automates content creation for Threads — from persona generation to content pillars, topic ideation, and post scheduling.
+      </p>
+      <p style="font-size:15px;color:var(--text-2);line-height:1.8;margin-bottom:32px;">
+        I'm currently documenting this workflow in detail and will be adding screenshots, flow diagrams, and a full breakdown soon. Check back or reach out if you'd like to know more.
+      </p>
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:24px;">
+        <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text-3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;">What it covers</div>
+        <ul style="font-size:14px;color:var(--text-2);line-height:2;padding-left:20px;">
+          <li>AI persona generation based on niche &amp; target audience</li>
+          <li>Content pillar creation aligned with brand voice</li>
+          <li>Automated topic ideation &amp; posting schedule</li>
+          <li>Prompt-engineered pipelines for consistent output quality</li>
+          <li>Workflow built to reduce manual ideation effort by ~80%</li>
+        </ul>
+      </div>
+      <div style="margin-top:24px;display:flex;flex-wrap:wrap;gap:8px;">
+        <span class="skill-pill">AI Tools</span><span class="skill-pill">Prompt Engineering</span><span class="skill-pill">Workflow Automation</span><span class="skill-pill">Content Systems</span>
+      </div>
+    `
+  },
+
+  'bca': {
+    category: 'QA · Automation',
+    title: 'AI & Workflow Automation at BCA',
+    gradient: 'linear-gradient(135deg,#0c1445,#1e3a8a,#0d4a8a)',
+    role: 'Testing Analyst',
+    context: 'Bank Central Asia — Jul 2023 · Present',
+    body: `
+      <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.2);border-radius:100px;font-size:12px;font-family:'JetBrains Mono',monospace;color:#93c5fd;margin-bottom:32px;">
+        🔒 &nbsp;Internal project — shareable on request
+      </div>
+      <p style="font-size:15px;color:var(--text-2);line-height:1.8;margin-bottom:20px;">
+        Working as Testing Analyst across multiple internal banking products — Credit internal applications, Core banking systems, and myBCA — while simultaneously building automation scripts and AI-assisted workflows to speed up the testing process.
+      </p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:32px;">
+        <div style="background:rgba(37,99,235,0.07);border:1px solid rgba(37,99,235,0.15);border-radius:12px;padding:20px;">
+          <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--brand);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">Scope</div>
+          <div style="font-size:22px;font-family:'Space Grotesk',sans-serif;font-weight:700;color:white;margin-bottom:4px;">10+</div>
+          <div style="font-size:13px;color:var(--text-2);">Concurrent projects managed</div>
+        </div>
+        <div style="background:rgba(52,211,153,0.07);border:1px solid rgba(52,211,153,0.15);border-radius:12px;padding:20px;">
+          <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:#34d399;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">Impact</div>
+          <div style="font-size:22px;font-family:'Space Grotesk',sans-serif;font-weight:700;color:white;margin-bottom:4px;">Faster</div>
+          <div style="font-size:13px;color:var(--text-2);">Workflow via automation</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:24px;margin-bottom:24px;">
+        <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text-3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;">Key Responsibilities</div>
+        <ul style="font-size:14px;color:var(--text-2);line-height:2;padding-left:20px;">
+          <li>End-to-end testing before production releases</li>
+          <li>Validating business requirements against technical implementation</li>
+          <li>Collaborating with PO, BA, and engineering teams</li>
+          <li>Building automation scripts with Power Automate</li>
+          <li>Exploring AI-assisted testing workflows internally</li>
+          <li>Automation testing using Katalon and Selenium</li>
+        </ul>
+      </div>
+      <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text-3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;">Products tested</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px;">
+        <span class="skill-pill">Credit Internal App</span><span class="skill-pill">Core Banking System</span><span class="skill-pill">myBCA</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <span class="skill-pill">Power Automate</span><span class="skill-pill">Katalon</span><span class="skill-pill">Selenium</span><span class="skill-pill">UAT</span><span class="skill-pill">E2E Testing</span><span class="skill-pill">AI Workflows</span>
+      </div>
+    `
+  },
+
+  'casion': {
+    category: 'Product · Mobile App',
+    title: 'CASION — EV Charging System',
+    gradient: 'linear-gradient(135deg,#052e16,#064e3b,#065f46)',
+    role: 'Product Manager',
+    context: 'Nice to Meet You Studio — 2022',
+    body: `
+      <div style="border-radius:12px;overflow:hidden;margin-bottom:24px;border:1px solid rgba(255,255,255,0.07);">
+        <img src="/Brand_Assets/portfolio-images/page-04.png" style="width:100%;display:block;" alt="Casion app design" loading="lazy">
+      </div>
+
+      <p style="font-size:15px;color:var(--text-2);line-height:1.8;margin-bottom:24px;">
+        CASION is a startup focused on the operating system for electric vehicle chargers in Indonesia. I led the product workflow end-to-end — from initial idea through user flows, wireframing, and high-fidelity prototyping.
+      </p>
+      <p style="font-size:15px;color:var(--text-2);line-height:1.8;margin-bottom:32px;">
+        This was the first project I took from just an idea to a complete application, which made it one of the most meaningful in my career.
+      </p>
+
+      <!-- Process stages -->
+      <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text-3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;">Product Workflow</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:32px;">
+        <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:14px 10px;text-align:center;">
+          <div style="font-size:18px;margin-bottom:6px;">🗺️</div>
+          <div style="font-size:11px;color:#6ee7b7;font-weight:600;line-height:1.4;">User Flow</div>
+        </div>
+        <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:14px 10px;text-align:center;">
+          <div style="font-size:18px;margin-bottom:6px;">✏️</div>
+          <div style="font-size:11px;color:#6ee7b7;font-weight:600;line-height:1.4;">Wireframing</div>
+        </div>
+        <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:14px 10px;text-align:center;">
+          <div style="font-size:18px;margin-bottom:6px;">🎨</div>
+          <div style="font-size:11px;color:#6ee7b7;font-weight:600;line-height:1.4;">Style Tiles</div>
+        </div>
+        <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:14px 10px;text-align:center;">
+          <div style="font-size:18px;margin-bottom:6px;">📱</div>
+          <div style="font-size:11px;color:#6ee7b7;font-weight:600;line-height:1.4;">HiFi Design</div>
+        </div>
+        <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:14px 10px;text-align:center;">
+          <div style="font-size:18px;margin-bottom:6px;">🔗</div>
+          <div style="font-size:11px;color:#6ee7b7;font-weight:600;line-height:1.4;">Prototyping</div>
+        </div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:24px;margin-bottom:24px;">
+        <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text-3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;">My Responsibilities</div>
+        <ul style="font-size:14px;color:var(--text-2);line-height:2;padding-left:20px;">
+          <li>Created user flow based on client needs and business goals</li>
+          <li>Determined scope of work and project timeline</li>
+          <li>Wireframed screens so designers could understand the experience</li>
+          <li>Coordinated between client, designers, and developers</li>
+          <li>Ensured each stage aligned with the product vision</li>
+        </ul>
+      </div>
+
+      <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);border-radius:14px;padding:20px;margin-bottom:24px;">
+        <div style="font-size:13px;color:#6ee7b7;line-height:1.8;">
+          💡 <strong>Key Learning:</strong> How to translate a raw business idea into a structured, designed digital product — managing both the product thinking and the team execution simultaneously.
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <span class="skill-pill">User Flow</span><span class="skill-pill">Wireframing</span><span class="skill-pill">Scope Management</span><span class="skill-pill">Timeline Planning</span><span class="skill-pill">Stakeholder Coordination</span><span class="skill-pill">Figma</span>
+      </div>
+
+      <div style="border-radius:12px;overflow:hidden;margin-top:24px;border:1px solid rgba(255,255,255,0.07);">
+        <img src="/Brand_Assets/portfolio-images/page-05.png" style="width:100%;display:block;" alt="Casion workflow" loading="lazy">
+      </div>
+    `
+  },
+
+  'nobu': {
+    category: 'UX · Product',
+    title: 'NOBU NEO Revamp',
+    gradient: 'linear-gradient(135deg,#0f172a,#1e3a5f,#1a2e4a)',
+    role: 'Project / Product Manager',
+    context: 'Nice to Meet You Studio — 2022',
+    body: `
+      <div style="border-radius:12px;overflow:hidden;margin-bottom:24px;border:1px solid rgba(255,255,255,0.07);">
+        <img src="/Brand_Assets/portfolio-images/page-06.png" style="width:100%;display:block;" alt="Nobu Neo app" loading="lazy">
+      </div>
+
+      <p style="font-size:15px;color:var(--text-2);line-height:1.8;margin-bottom:24px;">
+        Nobu Neo is the mobile banking product of Nobu Bank. I was responsible for managing the UX revamp — balancing client requests with strong UX principles and competitor benchmarking.
+      </p>
+      <p style="font-size:15px;color:var(--text-2);line-height:1.8;margin-bottom:32px;">
+        My team and I didn't simply execute what the client asked. We pushed back with research, competitor analysis, and usability considerations — always advocating for the end user.
+      </p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:32px;">
+        <div style="background:rgba(37,99,235,0.07);border:1px solid rgba(37,99,235,0.15);border-radius:12px;padding:20px;">
+          <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--brand);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">Client</div>
+          <div style="font-size:16px;font-family:'Space Grotesk',sans-serif;font-weight:700;color:white;">Nobu Bank</div>
+          <div style="font-size:13px;color:var(--text-2);margin-top:4px;">Mobile banking product</div>
+        </div>
+        <div style="background:rgba(37,99,235,0.07);border:1px solid rgba(37,99,235,0.15);border-radius:12px;padding:20px;">
+          <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--brand);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">Type</div>
+          <div style="font-size:16px;font-family:'Space Grotesk',sans-serif;font-weight:700;color:white;">UX Revamp</div>
+          <div style="font-size:13px;color:var(--text-2);margin-top:4px;">Feature flow redesign</div>
+        </div>
+      </div>
+
+      <!-- Before/After highlight -->
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:24px;margin-bottom:24px;">
+        <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text-3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;">What I Did</div>
+        <ul style="font-size:14px;color:var(--text-2);line-height:2;padding-left:20px;">
+          <li>Competitor research across Indonesian mobile banking apps</li>
+          <li>User experience benchmarking and gap analysis</li>
+          <li>Feature flow improvements for transaction detail screens</li>
+          <li>Design coordination between client and UI/UX team</li>
+          <li>Balanced client requests with usability best practices</li>
+          <li>Ensured consistency across revamped screens</li>
+        </ul>
+      </div>
+
+      <div style="border-radius:12px;overflow:hidden;margin-bottom:24px;border:1px solid rgba(255,255,255,0.07);">
+        <img src="/Brand_Assets/portfolio-images/page-07.png" style="width:100%;display:block;" alt="Nobu Neo revamp screens" loading="lazy">
+      </div>
+
+      <div style="background:rgba(37,99,235,0.06);border:1px solid rgba(37,99,235,0.15);border-radius:14px;padding:20px;margin-bottom:24px;">
+        <div style="font-size:13px;color:#93c5fd;line-height:1.8;">
+          💡 <strong>Key Approach:</strong> Research first, then design. We didn't just fulfil requests — we validated every change with competitor data and user experience principles to ensure the product was genuinely better.
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <span class="skill-pill">UX Research</span><span class="skill-pill">Competitor Analysis</span><span class="skill-pill">Feature Flow</span><span class="skill-pill">Design Coordination</span><span class="skill-pill">Mobile Banking</span><span class="skill-pill">Figma</span>
+      </div>
+    `
+  },
+
+  'domi': {
+    category: 'Branding · Creative',
+    title: 'DOMI BED Brand Guideline',
+    gradient: 'linear-gradient(135deg,#431407,#9a3412,#7c2d12)',
+    role: 'Project Manager / Creative Lead',
+    context: 'Nice to Meet You Studio — 2022',
+    body: `
+      <div style="border-radius:12px;overflow:hidden;margin-bottom:24px;border:1px solid rgba(255,255,255,0.07);">
+        <img src="/Brand_Assets/portfolio-images/page-09.png" style="width:100%;display:block;" alt="Domi Bed product" loading="lazy">
+      </div>
+
+      <p style="font-size:15px;color:var(--text-2);line-height:1.8;margin-bottom:24px;">
+        Domi Bed is a Home Living brand selling exclusive bed products delivered in a box. I was asked to lead the brand guideline development — creating a consistent visual identity aligned with their logo, color palette, and target audience.
+      </p>
+      <p style="font-size:15px;color:var(--text-2);line-height:1.8;margin-bottom:32px;">
+        The scope also included character design, packaging revamp, and establishing a visual language that could scale across all touchpoints.
+      </p>
+
+      <!-- Process -->
+      <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text-3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;">Process</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:32px;">
+        <div style="background:rgba(251,146,60,0.08);border:1px solid rgba(251,146,60,0.2);border-radius:12px;padding:16px;text-align:center;">
+          <div style="font-size:20px;margin-bottom:8px;">📖</div>
+          <div style="font-size:12px;color:#fb923c;font-weight:600;margin-bottom:6px;">Brand Story</div>
+          <div style="font-size:11px;color:var(--text-2);line-height:1.6;">Defining brand identity, values, and narrative</div>
+        </div>
+        <div style="background:rgba(251,146,60,0.08);border:1px solid rgba(251,146,60,0.2);border-radius:12px;padding:16px;text-align:center;">
+          <div style="font-size:20px;margin-bottom:8px;">🔍</div>
+          <div style="font-size:12px;color:#fb923c;font-weight:600;margin-bottom:6px;">Research</div>
+          <div style="font-size:11px;color:var(--text-2);line-height:1.6;">Audience analysis, competitor benchmarking</div>
+        </div>
+        <div style="background:rgba(251,146,60,0.08);border:1px solid rgba(251,146,60,0.2);border-radius:12px;padding:16px;text-align:center;">
+          <div style="font-size:20px;margin-bottom:8px;">🎨</div>
+          <div style="font-size:12px;color:#fb923c;font-weight:600;margin-bottom:6px;">Guidelines</div>
+          <div style="font-size:11px;color:var(--text-2);line-height:1.6;">Typography, colour, packaging, characters</div>
+        </div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:24px;margin-bottom:24px;">
+        <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text-3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;">Deliverables</div>
+        <ul style="font-size:14px;color:var(--text-2);line-height:2;padding-left:20px;">
+          <li>Full brand guideline document (typography, colour system, logo usage)</li>
+          <li>Target audience definition — Young Mothers, Millennials, Gen Z</li>
+          <li>Brand character design (mascot/illustration system)</li>
+          <li>Packaging revamp for box delivery format</li>
+          <li>Visual direction aligned with brand story</li>
+        </ul>
+      </div>
+
+      <div style="border-radius:12px;overflow:hidden;margin-bottom:24px;border:1px solid rgba(255,255,255,0.07);">
+        <img src="/Brand_Assets/portfolio-images/page-10.png" style="width:100%;display:block;" alt="Domi brand guideline process" loading="lazy">
+      </div>
+
+      <div style="background:rgba(251,146,60,0.06);border:1px solid rgba(251,146,60,0.15);border-radius:14px;padding:20px;margin-bottom:24px;">
+        <div style="font-size:13px;color:#fdba74;line-height:1.8;">
+          💡 <strong>Key Focus:</strong> Creating a consistent brand experience that felt warm, trustworthy, and modern — matching what their target audience (young families) would connect with emotionally.
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <span class="skill-pill">Brand Guidelines</span><span class="skill-pill">Visual Direction</span><span class="skill-pill">Packaging Design</span><span class="skill-pill">Audience Research</span><span class="skill-pill">Creative Coordination</span>
+      </div>
+    `
+  },
+
+  'creator': {
+    category: 'Content · AI',
+    title: 'Creator & AI Content Systems',
+    gradient: 'linear-gradient(135deg,#2d1b69,#5b21b6,#4c1d95)',
+    role: 'Founder / Content Creator',
+    context: '@heyjasz — Ongoing',
+    body: `
+      <p style="font-size:15px;color:var(--text-2);line-height:1.8;margin-bottom:24px;">
+        Built an AI-focused personal brand across multiple platforms teaching AI tools, automation workflows, and digital productivity. Growing to 140K+ combined audience while experimenting with AI-assisted content systems at scale.
+      </p>
+
+      <!-- Stats row -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:32px;">
+        <div style="background:rgba(147,51,234,0.08);border:1px solid rgba(147,51,234,0.2);border-radius:10px;padding:12px 8px;text-align:center;">
+          <div style="font-size:16px;font-family:'Space Grotesk',sans-serif;font-weight:700;color:white;margin-bottom:2px;">90K+</div>
+          <div style="font-size:10px;color:var(--text-2);">Instagram</div>
+        </div>
+        <div style="background:rgba(147,51,234,0.08);border:1px solid rgba(147,51,234,0.2);border-radius:10px;padding:12px 8px;text-align:center;">
+          <div style="font-size:16px;font-family:'Space Grotesk',sans-serif;font-weight:700;color:white;margin-bottom:2px;">50K+</div>
+          <div style="font-size:10px;color:var(--text-2);">TikTok</div>
+        </div>
+        <div style="background:rgba(147,51,234,0.08);border:1px solid rgba(147,51,234,0.2);border-radius:10px;padding:12px 8px;text-align:center;">
+          <div style="font-size:16px;font-family:'Space Grotesk',sans-serif;font-weight:700;color:white;margin-bottom:2px;">23K+</div>
+          <div style="font-size:10px;color:var(--text-2);">Threads</div>
+        </div>
+        <div style="background:rgba(147,51,234,0.08);border:1px solid rgba(147,51,234,0.2);border-radius:10px;padding:12px 8px;text-align:center;">
+          <div style="font-size:16px;font-family:'Space Grotesk',sans-serif;font-weight:700;color:white;margin-bottom:2px;">2K+</div>
+          <div style="font-size:10px;color:var(--text-2);">YT Shorts</div>
+        </div>
+        <div style="background:rgba(147,51,234,0.08);border:1px solid rgba(147,51,234,0.2);border-radius:10px;padding:12px 8px;text-align:center;">
+          <div style="font-size:16px;font-family:'Space Grotesk',sans-serif;font-weight:700;color:white;margin-bottom:2px;">1K+</div>
+          <div style="font-size:10px;color:var(--text-2);">Facebook</div>
+        </div>
+      </div>
+
+      <!-- n8n Workflow Diagram -->
+      <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text-3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:14px;">AI Content Workflow (n8n — In Progress)</div>
+      <div style="background:#0d0d14;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:24px;overflow-x:auto;margin-bottom:24px;">
+
+        <!-- Row 1: main chain -->
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:nowrap;">
+          <div class="n8n-node n8n-trigger">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Schedule Trigger
+          </div>
+          <span class="n8n-arrow">→</span>
+          <div class="n8n-node n8n-action">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" stroke="currentColor" stroke-width="2"/><rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" stroke-width="2"/></svg>
+            Set: Niche &amp; Topics
+          </div>
+          <span class="n8n-arrow">→</span>
+          <div class="n8n-node n8n-ai">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><path d="M12 2a7 7 0 017 7c0 3.87-3.13 7-7 7S5 12.87 5 9a7 7 0 017-7z" stroke="currentColor" stroke-width="2"/><path d="M12 16v6M8 20h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Claude: Generate Persona
+          </div>
+          <span class="n8n-arrow">→</span>
+          <div class="n8n-node n8n-ai">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><path d="M12 2a7 7 0 017 7c0 3.87-3.13 7-7 7S5 12.87 5 9a7 7 0 017-7z" stroke="currentColor" stroke-width="2"/><path d="M12 16v6M8 20h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Claude: Write Threads Post
+          </div>
+        </div>
+
+        <!-- Connector line -->
+        <div style="margin-left:calc(100% - 240px);width:1px;height:12px;background:rgba(255,255,255,0.12);margin-bottom:0;"></div>
+
+        <!-- Row 2: branching outputs -->
+        <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end;flex-wrap:nowrap;">
+          <div class="n8n-node n8n-ai">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><path d="M12 2a7 7 0 017 7c0 3.87-3.13 7-7 7S5 12.87 5 9a7 7 0 017-7z" stroke="currentColor" stroke-width="2"/><path d="M12 16v6M8 20h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Claude: Repurpose → TikTok
+          </div>
+          <span class="n8n-arrow">→</span>
+          <div class="n8n-node n8n-output">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.22 1.18 2 2 0 012.19 0h3a2 2 0 012 1.72" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Post to Threads
+          </div>
+          <span class="n8n-arrow">→</span>
+          <div class="n8n-node n8n-output">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.22 1.18 2 2 0 012.19 0h3a2 2 0 012 1.72" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Post to TikTok
+          </div>
+        </div>
+
+        <div style="margin-top:16px;font-size:11px;font-family:'JetBrains Mono',monospace;color:rgba(255,255,255,0.2);text-align:center;">
+          ⚡ Built with n8n · Currently in development
+        </div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:24px;margin-bottom:24px;">
+        <div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text-3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;">What I'm Learning</div>
+        <ul style="font-size:14px;color:var(--text-2);line-height:2;padding-left:20px;">
+          <li>Audience psychology and what content actually converts</li>
+          <li>Building scalable content systems with AI assistance</li>
+          <li>Analytics — what to measure and what to ignore</li>
+          <li>Storytelling frameworks that work across platforms</li>
+          <li>AI-assisted repurposing from long → short → micro content</li>
+        </ul>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <span class="skill-pill">n8n</span><span class="skill-pill">Claude AI</span><span class="skill-pill">Content Strategy</span><span class="skill-pill">Prompt Engineering</span><span class="skill-pill">Analytics</span><span class="skill-pill">Storytelling</span>
+      </div>
+    `
+  }
+};
+
+function openProject(id) {
+  const p = PROJECTS[id];
+  if (!p) return;
+
+  const body = document.getElementById('proj-modal-body');
+  body.innerHTML = `
+    <!-- Visual banner -->
+    <div style="margin:-48px -40px 32px;height:200px;background:${p.gradient};position:relative;overflow:hidden;">
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,#111 100%);"></div>
+      <div style="position:absolute;bottom:24px;left:40px;right:60px;">
+        <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:rgba(255,255,255,0.5);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px;">${p.category}</div>
+        <h2 style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(20px,3vw,28px);color:white;letter-spacing:-0.025em;line-height:1.1;">${p.title}</h2>
+      </div>
+    </div>
+
+    <!-- Meta row -->
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:32px;">
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:100px;">
+        <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="rgba(255,255,255,0.4)" stroke-width="2"/><circle cx="12" cy="7" r="4" stroke="rgba(255,255,255,0.4)" stroke-width="2"/></svg>
+        <span style="font-size:12px;color:var(--text-2);">${p.role}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:100px;">
+        <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke="rgba(255,255,255,0.4)" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round"/></svg>
+        <span style="font-size:12px;color:var(--text-2);">${p.context}</span>
+      </div>
+    </div>
+
+    ${p.body}
+  `;
+
+  const modal = document.getElementById('proj-modal');
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // Scroll panel to top
+  document.getElementById('proj-panel-scroll').scrollTop = 0;
+}
+
+function closeProject() {
+  document.getElementById('proj-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Escape key closes
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeProject(); });
+</script>
+
+<!-- ── Dotted Surface (ported from React/Three.js component) ── -->
+<script type="module">
+import * as THREE from 'three';
+
+const SEPARATION = 150;
+const AMOUNTX  = 40;
+const AMOUNTY  = 60;
+
+const container = document.getElementById('dotted-bg');
+
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
+camera.position.set(0, 355, 1220);
+
+const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x000000, 0);
+container.appendChild(renderer.domElement);
+
+// Build geometry — identical to the React component
+const positions = [];
+const colors    = [];
+
+for (let ix = 0; ix < AMOUNTX; ix++) {
+  for (let iy = 0; iy < AMOUNTY; iy++) {
+    positions.push(
+      ix * SEPARATION - (AMOUNTX * SEPARATION) / 2,
+      0,
+      iy * SEPARATION - (AMOUNTY * SEPARATION) / 2
+    );
+    // Dark theme → light blue-white dots (0-1 colour range for Three.js)
+    colors.push(0.55, 0.65, 0.95);
+  }
+}
+
+const geometry = new THREE.BufferGeometry();
+geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+geometry.setAttribute('color',    new THREE.Float32BufferAttribute(colors,    3));
+
+const material = new THREE.PointsMaterial({
+  size:         6,
+  vertexColors: true,
+  transparent:  true,
+  opacity:      0.35,
+  sizeAttenuation: true,
+});
+
+const points = new THREE.Points(geometry, material);
+scene.add(points);
+
+let count = 0;
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  const posAttr = geometry.attributes.position;
+  const arr     = posAttr.array;
+
+  let i = 0;
+  for (let ix = 0; ix < AMOUNTX; ix++) {
+    for (let iy = 0; iy < AMOUNTY; iy++) {
+      // Same sine-wave formula as the original component
+      arr[i * 3 + 1] =
+        Math.sin((ix + count) * 0.3) * 50 +
+        Math.sin((iy + count) * 0.5) * 50;
+      i++;
+    }
+  }
+
+  posAttr.needsUpdate = true;
+  renderer.render(scene, camera);
+  count += 0.1;
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+animate();
+</script>
+
+</body>
+</html>
