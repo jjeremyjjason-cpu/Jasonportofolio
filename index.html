@@ -363,6 +363,47 @@
       50% { opacity: 0.8; box-shadow: 0 0 0 5px rgba(52,211,153,0); }
     }
     .dot-pulse { animation: pulse-dot 2s ease infinite; }
+
+    /* ── Mobile responsive ───────────────────────────────── */
+    @media (max-width: 768px) {
+      .wrap { padding: 0 20px; }
+      .section { padding: 64px 0; }
+
+      /* Hero */
+      .hero-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+      .hero-photo-wrap { justify-content: center !important; }
+      .hero-photo-frame { width: 100% !important; max-width: 340px !important; height: 380px !important; }
+
+      /* Nav */
+      .nav-links { display: none !important; }
+      .nav-inner { padding: 0 20px !important; }
+
+      /* Stats strip */
+      .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+
+      /* What I Do */
+      .caps-top { grid-template-columns: 1fr !important; }
+      .caps-bottom { grid-template-columns: 1fr !important; }
+
+      /* Projects */
+      .proj-grid { grid-template-columns: 1fr !important; }
+
+      /* How I Think */
+      .articles-grid { grid-template-columns: 1fr !important; }
+
+      /* Experience */
+      .exp-grid { grid-template-columns: 1fr !important; }
+
+      /* Education + Skills */
+      .edu-grid { grid-template-columns: 1fr !important; }
+
+      /* About */
+      .about-grid { grid-template-columns: 1fr !important; }
+
+      /* Headings */
+      .section-heading { font-size: 2rem !important; }
+      h1 { font-size: clamp(2.2rem, 8vw, 3rem) !important; }
+    }
   </style>
 </head>
 
@@ -406,7 +447,7 @@
   </div>
 
   <div class="wrap" style="width:100%;padding-top:60px;padding-bottom:80px;">
-    <div style="display:grid;grid-template-columns:1fr 420px;gap:80px;align-items:center;">
+    <div class="hero-grid" style="display:grid;grid-template-columns:1fr 420px;gap:80px;align-items:center;">
 
       <!-- LEFT: Content -->
       <div>
@@ -467,13 +508,13 @@
       </div>
 
       <!-- RIGHT: Photo -->
-      <div style="position:relative;display:flex;justify-content:flex-end;">
+      <div class="hero-photo-wrap" style="position:relative;display:flex;justify-content:flex-end;">
         <!-- Glow ring behind -->
         <div style="position:absolute;inset:-40px;border-radius:32px;background:radial-gradient(ellipse at 60% 40%, rgba(37,99,235,0.3) 0%, transparent 65%);pointer-events:none;filter:blur(20px);"></div>
 
         <!-- Photo frame -->
-        <div style="position:relative;width:400px;height:500px;border-radius:24px;overflow:hidden;border:1px solid rgba(37,99,235,0.35);box-shadow:0 0 0 1px rgba(37,99,235,0.12), 0 32px 64px rgba(0,0,0,0.7), 0 0 80px rgba(37,99,235,0.15), inset 0 1px 0 rgba(255,255,255,0.08);">
-          <img src="Brand_Assets/Profile_picture.jpg" alt="Jeremy Jason" style="width:100%;height:100%;object-fit:cover;object-position:50% 20%;transform:scale(1.05);" />
+        <div class="hero-photo-frame" style="position:relative;width:400px;height:500px;border-radius:24px;overflow:hidden;border:1px solid rgba(37,99,235,0.35);box-shadow:0 0 0 1px rgba(37,99,235,0.12), 0 32px 64px rgba(0,0,0,0.7), 0 0 80px rgba(37,99,235,0.15), inset 0 1px 0 rgba(255,255,255,0.08);">
+          <img src="Brand_Assets/Profile_picture.jpg" alt="Jeremy Jason" style="width:100%;height:100%;object-fit:cover;object-position:50% 25%;transform:scale(1.05);" />
           <!-- Bottom gradient -->
           <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(8,8,8,0.7) 0%, transparent 50%);"></div>
           <!-- Blue color treatment -->
@@ -497,7 +538,7 @@
 ════════════════════════════════════════════════════════ -->
 <div style="background:var(--s1);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
   <div class="wrap">
-    <div style="display:grid;grid-template-columns:repeat(5,1fr);">
+    <div class="stats-grid" style="display:grid;grid-template-columns:repeat(5,1fr);">
       <div class="stat-item">
         <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:28px;letter-spacing:-0.03em;color:white;">2+</span>
         <span style="font-size:12px;color:var(--text-2);text-align:center;">Years at BCA</span>
@@ -528,7 +569,7 @@
 ════════════════════════════════════════════════════════ -->
 <section id="about" class="section">
   <div class="wrap">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;">
+    <div class="about-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;">
 
       <!-- Left -->
       <div class="fade-up">
@@ -599,7 +640,7 @@
     </div>
 
     <!-- Grid: 3 top, 2 bottom -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px;" class="fade-up">
+    <div class="caps-top fade-up" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px;">
 
       <!-- 1 -->
       <div class="cap-card">
@@ -655,7 +696,7 @@
 
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="fade-up">
+    <div class="caps-bottom fade-up" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
 
       <!-- 4 -->
       <div class="cap-card">
@@ -711,7 +752,7 @@
     </div>
 
     <!-- 3-col grid -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;" class="fade-up">
+    <div class="proj-grid fade-up" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
 
       <!-- P1: AI Threads -->
       <div class="proj-card" data-project="ai-threads" style="cursor:pointer;" onclick="openProject('ai-threads')">
@@ -898,7 +939,7 @@
       <h2 class="section-heading">How I Think</h2>
     </div>
 
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;" class="fade-up">
+    <div class="articles-grid fade-up" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
 
       <!-- A1 -->
       <div class="article-card">
@@ -933,7 +974,7 @@
 ════════════════════════════════════════════════════════ -->
 <section id="experience" class="section">
   <div class="wrap">
-    <div style="display:grid;grid-template-columns:1fr 1.5fr;gap:96px;align-items:start;">
+    <div class="exp-grid" style="display:grid;grid-template-columns:1fr 1.5fr;gap:96px;align-items:start;">
 
       <!-- Left: Heading -->
       <div class="fade-up" style="position:sticky;top:96px;">
@@ -1045,7 +1086,7 @@
 ════════════════════════════════════════════════════════ -->
 <section class="section" style="background:var(--s1);">
   <div class="wrap">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:64px;">
+    <div class="edu-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:64px;">
 
       <!-- Education -->
       <div class="fade-up">
