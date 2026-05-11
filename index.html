@@ -393,6 +393,7 @@
 
       /* Experience */
       .exp-grid { grid-template-columns: 1fr !important; }
+      .exp-sticky { position: static !important; }
 
       /* Education + Skills */
       .edu-grid { grid-template-columns: 1fr !important; }
@@ -977,7 +978,7 @@
     <div class="exp-grid" style="display:grid;grid-template-columns:1fr 1.5fr;gap:96px;align-items:start;">
 
       <!-- Left: Heading -->
-      <div class="fade-up" style="position:sticky;top:96px;">
+      <div class="fade-up exp-sticky" style="position:sticky;top:96px;">
         <div class="section-label">Career</div>
         <h2 class="section-heading" style="margin-bottom:24px;">Experience &amp; Background</h2>
         <p style="font-size:15px;color:var(--text-2);line-height:1.75;">5+ years across product management, QA, project coordination, and AI-assisted development.</p>
